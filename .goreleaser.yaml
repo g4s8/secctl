@@ -1,0 +1,97 @@
+# GoReleaser configuration for secctl
+# https://goreleaser.com
+
+version: 2
+
+before:
+  hooks:
+    # Run tests and formatting before building
+    - go mod download
+    - go test ./...
+
+builds:
+  - id: secctl
+    binary: secctl
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    # Exclude invalid combinations
+    ignore:
+      - goos: windows
+        goarch: arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+      - -X main.builtBy=goreleaser
+
+archives:
+  - id: secctl
+    format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Version }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: 'checksums.txt'
+  algorithm: sha256
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^chore:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: g4s8
+    name: secctl
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## secctl {{ .Tag }}
+
+    **Full Changelog**: https://github.com/g4s8/secctl/compare/{{ .PreviousTag }}...{{ .Tag }}
+
+    ### Installation
+
+    #### Binary Download
+    Download the appropriate binary for your platform from the assets below.
+
+    #### Using go install
+    ```bash
+    go install github.com/g4s8/secctl@{{ .Tag }}
+    ```
+
+    ### Checksums
+    All binaries are checksummed. Verify downloads using `checksums.txt`.
+
+  footer: |
+    **Thanks for using secctl!**
+
+    Report issues: https://github.com/g4s8/secctl/issues

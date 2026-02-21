@@ -1,0 +1,48 @@
+# golangci-lint configuration
+# https://golangci-lint.run/usage/configuration/
+
+run:
+  timeout: 5m
+  tests: true
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - gosimple
+    - misspell
+    - unconvert
+    - unparam
+    - gocyclo
+    - revive
+
+linters-settings:
+  gocyclo:
+    min-complexity: 15
+
+  revive:
+    rules:
+      - name: var-naming
+        disabled: true
+
+issues:
+  exclude-rules:
+    # Ignore deprecation warnings in test files
+    - path: _test\.go
+      linters:
+        - staticcheck
+      text: "SA1019"
+
+    # Allow unchecked errors in test cleanup (defer statements)
+    - path: _test\.go
+      linters:
+        - errcheck
+      text: "Error return value.*is not checked"
+      source: "defer.*\\(.*\\)"
+
+  max-issues-per-linter: 0
+  max-same-issues: 0
