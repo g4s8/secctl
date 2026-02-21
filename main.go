@@ -24,8 +24,9 @@ func main() {
 
 	if cfg.showVersion {
 		fmt.Printf("k8s-secret-editor version %s ("+
-		"commit: %s, built at: %s, built by: %s"+
-		")\n", version, commit, date, builtBy)
+			"commit: %s, built at: %s, built by: %s"+
+			")\n", version, commit, date, builtBy)
+	}
 
 	k8sClient, err := NewK8SClient(cfg.KubeConfig)
 	if err != nil {

@@ -1,48 +1,51 @@
-# golangci-lint configuration
-# https://golangci-lint.run/usage/configuration/
-
+version: "2"
 run:
-  timeout: 5m
-  tests: true
   modules-download-mode: readonly
-
+  tests: true
 linters:
   enable:
-    - gofmt
-    - govet
-    - staticcheck
-    - ineffassign
-    - unused
-    - gosimple
+    - gocyclo
     - misspell
+    - revive
     - unconvert
     - unparam
-    - gocyclo
-    - revive
-
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-
-  revive:
+  settings:
+    gocyclo:
+      min-complexity: 15
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
     rules:
-      - name: var-naming
-        disabled: true
-
+      - linters:
+          - staticcheck
+        path: _test\.go
+        text: SA1019
+      - linters:
+          - errcheck
+        path: _test\.go
+        text: Error return value.*is not checked
+        source: defer.*\(.*\)
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
 issues:
-  exclude-rules:
-    # Ignore deprecation warnings in test files
-    - path: _test\.go
-      linters:
-        - staticcheck
-      text: "SA1019"
-
-    # Allow unchecked errors in test cleanup (defer statements)
-    - path: _test\.go
-      linters:
-        - errcheck
-      text: "Error return value.*is not checked"
-      source: "defer.*\\(.*\\)"
-
   max-issues-per-linter: 0
   max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
