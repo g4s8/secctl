@@ -1,11 +1,18 @@
 # secctl - Kubernetes Secrets Interactive Editor
 
-A simple, interactive TUI CLI tool for editing Kubernetes secrets.
+A small TUI tool to browse and edit Kubernetes secrets without YAML or base64.
+
+[![Test](https://github.com/g4s8/secctl/actions/workflows/test.yml/badge.svg)](https://github.com/g4s8/secctl/actions/workflows/test.yml)
+![GitHub License](https://img.shields.io/github/license/g4s8/secctl)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/g4s8/secctl/total)
+
 
 ## Features
 
 - **Interactive selection** - Browse namespaces, secrets, and keys with search support
 - **External editor support** - Edit secrets in your preferred editor (vim, nano, emacs, etc.)
+- **Search** - Fuzzy search on every step
+- **Diff** - Preview diff and confirm save
 
 ## Installation
 
