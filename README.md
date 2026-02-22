@@ -6,6 +6,9 @@ A small TUI tool to browse and edit Kubernetes secrets without YAML or base64.
 ![GitHub License](https://img.shields.io/github/license/g4s8/secctl)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/g4s8/secctl/total)
 
+## Demo
+
+![demo.gif](demo.gif)
 
 ## Features
 
