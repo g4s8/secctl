@@ -19,7 +19,7 @@ var (
 	builtBy = "unknown"
 )
 
-func main() {
+func main() { //nolint:gocyclo
 	var cfg Config
 	cfg.Parse()
 
