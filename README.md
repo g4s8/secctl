@@ -22,16 +22,10 @@ A small TUI tool to browse and edit Kubernetes secrets without YAML or base64.
 ### Download pre-built binaries
 Download the latest release from [GitHub Releases](https://github.com/g4s8/secctl/releases):
 
-```bash
-# Linux (amd64)
-curl -LO https://github.com/g4s8/secctl/releases/latest/download/secctl_Linux_x86_64.tar.gz
-tar -xzf secctl_Linux_x86_64.tar.gz
-sudo mv secctl /usr/local/bin/
+### Using homebrew
 
-# macOS (Apple Silicon)
-curl -LO https://github.com/g4s8/secctl/releases/latest/download/secctl_Darwin_arm64.tar.gz
-tar -xzf secctl_Darwin_arm64.tar.gz
-sudo mv secctl /usr/local/bin/
+```
+brew install g4s8/tap/secctl
 ```
 
 ### Using go install
