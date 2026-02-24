@@ -90,6 +90,7 @@ func main() { //nolint:gocyclo
 
 	if slices.Equal(originData, editedData) {
 		fmt.Println("No changes detected, exiting.")
+		return
 	}
 
 	dmp := diffmatchpatch.New()
