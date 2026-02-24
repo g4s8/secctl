@@ -82,9 +82,6 @@ homebrew_casks:
       branch: master
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     commit_msg_template: "Cask update for {{ .ProjectName }} version {{ .Tag }}"
-    install: |
-      system_command "/usr/bin/xattr",
-        args: ["-dr", "com.apple.quarantine", "#{staged_path}/secctl"]
 
 release:
   github:
