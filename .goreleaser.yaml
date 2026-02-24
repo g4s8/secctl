@@ -78,7 +78,7 @@ homebrew_casks:
     directory: Casks
     repository:
       owner: g4s8
-      name: .tap
+      name: homebrew-tap
       branch: master
       token: "{{ .Env.TAP_GITHUB_TOKEN }}"
     commit_msg_template: "Cask update for {{ .ProjectName }} version {{ .Tag }}"
