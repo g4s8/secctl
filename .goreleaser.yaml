@@ -67,6 +67,25 @@ changelog:
       - Merge pull request
       - Merge branch
 
+homebrew_casks:
+  - name: secctl
+    ids:
+      - secctl
+    binaries:
+      - secctl
+    homepage: "https://github.com/g4s8/secctl"
+    description: "A small TUI tool to browse and edit Kubernetes secrets without YAML or base64"
+    directory: Casks
+    repository:
+      owner: g4s8
+      name: .tap
+      branch: master
+      token: "{{ .Env.TAP_GITHUB_TOKEN }}"
+    commit_msg_template: "Cask update for {{ .ProjectName }} version {{ .Tag }}"
+    install: |
+      system_command "/usr/bin/xattr",
+        args: ["-dr", "com.apple.quarantine", "#{staged_path}/secctl"]
+
 release:
   github:
     owner: g4s8
@@ -83,6 +102,11 @@ release:
 
     #### Binary Download
     Download the appropriate binary for your platform from the assets below.
+
+    #### Using Homebrew
+    ```bash
+    brew install --cask g4s8/.tap/secctl
+    ```
 
     #### Using go install
     ```bash
