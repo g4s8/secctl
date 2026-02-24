@@ -131,7 +131,11 @@ func runPrompt(title string, items []string) string {
 		},
 		Searcher: func(input string, index int) bool {
 			lower := strings.ToLower(input)
-			return strings.HasPrefix(strings.ToLower(items[index]), lower)
+			item := strings.ToLower(items[index])
+			if len(input) < 3 {
+				return strings.HasPrefix(item, lower)
+			}
+			return strings.Contains(item, lower)
 		},
 	}
 	_, result, err := prompt.Run()
