@@ -72,7 +72,7 @@ func main() { //nolint:gocyclo
 		fatalf("Key '%s' not found in secret '%s' in namespace '%s'", selectedKey, selectedSecret, selectedNamespace)
 	}
 
-	tmpFile, err := NewTmpFile()
+	tmpFile, err := NewTmpFile(selectedKey)
 	if err != nil {
 		fatalf("Error creating temp file: %v", err)
 	}
