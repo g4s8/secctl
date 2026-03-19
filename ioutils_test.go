@@ -6,15 +6,10 @@ import (
 )
 
 func TestNewTmpFile(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.file.Close()
-	defer os.Remove(tmp.file.Name())
+	tmp := newTestTmpFile(t)
 
 	// Verify file exists
-	fi, err := os.Stat(tmp.file.Name())
+	fi, err := os.Stat(tmp.path)
 	if err != nil {
 		t.Fatalf("failed to stat temp file: %v", err)
 	}
@@ -26,14 +21,9 @@ func TestNewTmpFile(t *testing.T) {
 }
 
 func TestTmpFilePermissions(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.file.Close()
-	defer os.Remove(tmp.file.Name())
+	tmp := newTestTmpFile(t)
 
-	fi, err := os.Stat(tmp.file.Name())
+	fi, err := os.Stat(tmp.path)
 	if err != nil {
 		t.Fatalf("failed to stat temp file: %v", err)
 	}
@@ -47,28 +37,20 @@ func TestTmpFilePermissions(t *testing.T) {
 }
 
 func TestTmpFileWrite(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.Close()
+	tmp := newTestTmpFile(t)
 
 	testData := []byte("test data for secret")
-	err = tmp.Write(testData)
+	err := tmp.Write(testData)
 	if err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
 	}
 }
 
 func TestTmpFileRead(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.Close()
+	tmp := newTestTmpFile(t)
 
 	testData := []byte("test secret data")
-	err = tmp.Write(testData)
+	err := tmp.Write(testData)
 	if err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
 	}
@@ -85,16 +67,12 @@ func TestTmpFileRead(t *testing.T) {
 }
 
 func TestTmpFileReadAfterMultipleWrites(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.Close()
+	tmp := newTestTmpFile(t)
 
 	// Write multiple times
 	data1 := []byte("first")
 	data2 := []byte("second")
-	err = tmp.Write(data1)
+	err := tmp.Write(data1)
 	if err != nil {
 		t.Fatalf("failed to write first data: %v", err)
 	}
@@ -104,28 +82,22 @@ func TestTmpFileReadAfterMultipleWrites(t *testing.T) {
 		t.Fatalf("failed to write second data: %v", err)
 	}
 
-	// Read should return both
 	readData, err := tmp.Read()
 	if err != nil {
 		t.Fatalf("failed to read from temp file: %v", err)
 	}
 
-	expected := "firstsecond"
+	expected := "second"
 	if string(readData) != expected {
 		t.Errorf("expected data %s, got %s", expected, string(readData))
 	}
 }
 
 func TestTmpFileClose(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-
-	filePath := tmp.file.Name()
+	tmp := newTestTmpFile(t)
 
 	// Write some data
-	err = tmp.Write([]byte("test"))
+	err := tmp.Write([]byte("test"))
 	if err != nil {
 		t.Fatalf("failed to write to temp file: %v", err)
 	}
@@ -137,20 +109,17 @@ func TestTmpFileClose(t *testing.T) {
 	}
 
 	// Verify file is deleted
-	_, err = os.Stat(filePath)
+	_, err = os.Stat(tmp.path)
 	if !os.IsNotExist(err) {
-		t.Errorf("temp file was not deleted: %s", filePath)
+		t.Errorf("temp file was not deleted: %s", tmp.path)
 	}
 }
 
 func TestTmpFileCloseMultipleTimes(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
+	tmp := newTestTmpFile(t)
 
 	// First close
-	err = tmp.Close()
+	err := tmp.Close()
 	if err != nil {
 		t.Fatalf("first close failed: %v", err)
 	}
@@ -163,11 +132,7 @@ func TestTmpFileCloseMultipleTimes(t *testing.T) {
 }
 
 func TestTmpFileOpenEditor(t *testing.T) {
-	tmp, err := NewTmpFile()
-	if err != nil {
-		t.Fatalf("failed to create temp file: %v", err)
-	}
-	defer tmp.Close()
+	tmp := newTestTmpFile(t)
 
 	editorPath := "/bin/sh"
 	if _, err := os.Stat(editorPath); os.IsNotExist(err) {
@@ -184,4 +149,19 @@ func TestTmpFileOpenEditor(t *testing.T) {
 	if err != nil {
 		t.Logf("OpenEditor returned error: %v (expected for sh with no input)", err)
 	}
+}
+
+func newTestTmpFile(t *testing.T) *TmpFile {
+	t.Helper()
+
+	tmp, err := NewTmpFile("test")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	t.Cleanup(func() {
+		if err := tmp.Close(); err != nil {
+			t.Logf("failed to clean up temp file: %v", err)
+		}
+	})
+	return tmp
 }

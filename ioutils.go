@@ -4,42 +4,54 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path"
 )
 
 type TmpFile struct {
-	file *os.File
+	path string
 }
 
-func NewTmpFile() (*TmpFile, error) {
-	file, err := os.CreateTemp(os.TempDir(), "k8s-secret-editor-")
+func NewTmpFile(suffix string) (*TmpFile, error) {
+	name := fmt.Sprintf("k8s-secret-editor-%s", suffix)
+	p := path.Join(os.TempDir(), name)
+	f, err := os.Create(p)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating temp file: %w", err)
 	}
-
+	if err := f.Close(); err != nil {
+		_ = os.Remove(f.Name())
+		return nil, fmt.Errorf("error closing temp file: %w", err)
+	}
 	// Set restrictive permissions to protect sensitive secret data
-	if err := os.Chmod(file.Name(), 0600); err != nil {
-		_ = file.Close()
-		_ = os.Remove(file.Name())
+	if err := os.Chmod(p, 0o600); err != nil {
+		_ = os.Remove(p)
 		return nil, fmt.Errorf("error setting file permissions: %w", err)
 	}
 
-	return &TmpFile{file: file}, nil
+	return &TmpFile{path: p}, nil
 }
 
 func (t *TmpFile) Write(data []byte) error {
-	if _, err := t.file.Write(data); err != nil {
+	f, err := os.OpenFile(t.path, os.O_WRONLY|os.O_TRUNC, 0o600)
+	if err != nil {
+		return fmt.Errorf("error opening temp file for writing: %w", err)
+	}
+	if _, err := f.Write(data); err != nil {
 		return fmt.Errorf("error writing to temp file: %w", err)
+	}
+	if err := f.Sync(); err != nil {
+		return fmt.Errorf("error syncing temp file: %w", err)
 	}
 	return nil
 }
 
 func (t *TmpFile) Read() ([]byte, error) {
-	// Move the file pointer back to the beginning before reading
-	if _, err := t.file.Seek(0, io.SeekStart); err != nil {
-		return nil, fmt.Errorf("error seeking to beginning of temp file: %w", err)
+	f, err := os.Open(t.path)
+	if err != nil {
+		return nil, fmt.Errorf("error opening temp file for reading: %w", err)
 	}
 
-	data, err := io.ReadAll(t.file)
+	data, err := io.ReadAll(f)
 	if err != nil {
 		return nil, fmt.Errorf("error reading from temp file: %w", err)
 	}
@@ -47,16 +59,14 @@ func (t *TmpFile) Read() ([]byte, error) {
 }
 
 func (t *TmpFile) OpenEditor(editor interface{ Open(filePath string) error }) error {
-	return editor.Open(t.file.Name())
+	if err := editor.Open(t.path); err != nil {
+		return fmt.Errorf("error opening editor: %w", err)
+	}
+	return nil
 }
 
 func (t *TmpFile) Close() error {
-	name := t.file.Name()
-	if err := t.file.Close(); err != nil {
-		return err
-	}
-	// Remove temp file after closing to avoid leaking secrets
-	if err := os.Remove(name); err != nil {
+	if err := os.Remove(t.path); err != nil {
 		return fmt.Errorf("error removing temp file: %w", err)
 	}
 	return nil
