@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"
 	"github.com/sergi/go-diff/diffmatchpatch"
 )
@@ -147,6 +148,10 @@ func runPrompt(title string, items []string) string {
 }
 
 func withTimeoutCtx[T any](f func(context.Context) (T, error)) (T, error) {
+	s := spinner.New(spinner.CharSets[22], 100*time.Millisecond)
+	s.Start()
+	defer s.Stop()
+
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	return f(ctx)
